@@ -1,0 +1,3304 @@
+[
+    {
+        "id": "7404dcbbdfa141d6",
+        "type": "tab",
+        "label": "Fluxo 8",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "ac2227f00f6e20b1",
+        "type": "comment",
+        "z": "7404dcbbdfa141d6",
+        "name": "Gravação da sessão CRIPTOGRAFIA HÍBRIDA",
+        "info": "criptografia hibrida\n\n\nGeração de Chaves:\nO processo começa gerando duas chaves aleatórias e únicas para cada gravação de áudio:\nUma Chave Simétrica AES (aesKey) de 32 bytes (256 bits). Esta chave será usada para criptografar o áudio em si.\nUm Vetor de Inicialização (IV) de 16 bytes. O IV é usado no algoritmo AES-GCM e deve ser único para cada criptografia, mas não precisa ser secreto.\n\nCriptografia do Áudio (AES-256-GCM):\nO áudio bruto (o Buffer WAV vindo do microfone) é criptografado usando a aesKey gerada aleatoriamente e o iv.\nO algoritmo AES-256-GCM (Galois/Counter Mode) é usado. Este modo não só criptografa os dados, mas também gera uma Authentication Tag (authTag) de 16 bytes. A authTag é crucial para verificar a integridade dos dados na descriptografia, garantindo que não foram adulterados.\nO resultado desta etapa são os encryptedAudio (dados de áudio cifrados) e a authTag.\n\nCriptografia da Chave AES (RSA):\nA aesKey (que é a chave que pode descriptografar o áudio e que é pequena) é criptografada usando a chave pública RSA.\nA publicKeyRSA é uma chave assimétrica, usada para criptografar dados que só podem ser descriptografados com a chave privada correspondente.\nO padding RSA_PKCS1_OAEP_PADDING é aplicado, que é um método recomendado para segurança ao usar RSA para criptografar chaves.\nO resultado é a encryptedAesKey (a chave AES agora criptografada pela chave pública RSA).\n\nEmpacotamento dos Dados para Salvamento:\nPara garantir que todos os componentes necessários para a descriptografia estejam juntos, eles são concatenados em um único Buffer. A ordem é importante para a descriptografia:\nPrimeiro o iv (16 bytes).\nDepois a authTag (16 bytes).\nEm seguida, a encryptedAesKey (a chave AES criptografada por RSA, que tem cerca de 256 bytes para RSA 2048 bits).\nPor fim, o encryptedAudio (o áudio em si, cifrado com AES).\nEste Buffer combinado é o msg.payload que será salvo no arquivo .enc (encrypted).",
+        "x": 320,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "89679cc9121f162d",
+        "type": "comment",
+        "z": "7404dcbbdfa141d6",
+        "name": "ambientação",
+        "info": "",
+        "x": 210,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "9cc6df521cd37b16",
+        "type": "ui_dropdown",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "label": "",
+        "tooltip": "",
+        "place": "Select option",
+        "group": "3d31dca9f213fe21",
+        "order": 1,
+        "width": 10,
+        "height": 1,
+        "passthru": true,
+        "multiple": false,
+        "options": [
+            {
+                "label": "Floresta",
+                "value": "floresta",
+                "type": "str"
+            },
+            {
+                "label": "Taverna",
+                "value": "taverna",
+                "type": "str"
+            },
+            {
+                "label": "Dungeon",
+                "value": "dungeon",
+                "type": "str"
+            },
+            {
+                "label": "Combate",
+                "value": "combate",
+                "type": "str"
+            },
+            {
+                "label": "Vitória",
+                "value": "vitoria",
+                "type": "str"
+            },
+            {
+                "label": "Parar Música",
+                "value": "stop",
+                "type": "str"
+            }
+        ],
+        "payload": "",
+        "topic": "topic",
+        "topicType": "msg",
+        "className": "",
+        "x": 188.09088134765625,
+        "y": 786.0909423828125,
+        "wires": [
+            [
+                "26dbf85a59f44d4b"
+            ]
+        ]
+    },
+    {
+        "id": "7229e81f674e829f",
+        "type": "mqtt out JSON",
+        "z": "7404dcbbdfa141d6",
+        "name": "Publicar MQTT",
+        "topic": "",
+        "qos": "0",
+        "retain": "false",
+        "broker": "48af79046741b302",
+        "ignoreempty": true,
+        "wholemsg": true,
+        "x": 958,
+        "y": 977,
+        "wires": []
+    },
+    {
+        "id": "7c8e1c4449b8f710",
+        "type": "comment",
+        "z": "7404dcbbdfa141d6",
+        "name": "Notas com criptografia RSA",
+        "info": "",
+        "x": 280,
+        "y": 1100,
+        "wires": []
+    },
+    {
+        "id": "26dbf85a59f44d4b",
+        "type": "switch",
+        "z": "7404dcbbdfa141d6",
+        "name": "selecionar música",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "floresta",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "taverna",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "dungeon",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "combate",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "vitoria",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "stop",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 6,
+        "x": 418.09088134765625,
+        "y": 786.0909423828125,
+        "wires": [
+            [
+                "c3a1fa4f432d7068",
+                "07b13acd6c531a33"
+            ],
+            [
+                "94ee63798140b2a0",
+                "07b13acd6c531a33"
+            ],
+            [
+                "f7e01160e4bbeb14",
+                "07b13acd6c531a33"
+            ],
+            [
+                "abf2b548ab2e2076",
+                "07b13acd6c531a33"
+            ],
+            [
+                "752e2c1b3c8ac1cd",
+                "07b13acd6c531a33"
+            ],
+            [
+                "4143cd32f9cee180",
+                "07b13acd6c531a33"
+            ]
+        ]
+    },
+    {
+        "id": "c3a1fa4f432d7068",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "musica floresta",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "http://localhost:1880/floresta.mp3",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 688.0908813476562,
+        "y": 726.0909423828125,
+        "wires": [
+            [
+                "8e6492224a709035"
+            ]
+        ]
+    },
+    {
+        "id": "94ee63798140b2a0",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "musica taverna",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "http://localhost:1880/taverna.mp3",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 688.0908813476562,
+        "y": 766.0909423828125,
+        "wires": [
+            [
+                "8e6492224a709035"
+            ]
+        ]
+    },
+    {
+        "id": "f7e01160e4bbeb14",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "musica dungeon",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "http://localhost:1880/dungeon.mp3",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 688.0908813476562,
+        "y": 806.0909423828125,
+        "wires": [
+            [
+                "8e6492224a709035"
+            ]
+        ]
+    },
+    {
+        "id": "abf2b548ab2e2076",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "musica combate",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "http://localhost:1880/combate.mp3",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 688.0908813476562,
+        "y": 846.0909423828125,
+        "wires": [
+            [
+                "8e6492224a709035"
+            ]
+        ]
+    },
+    {
+        "id": "752e2c1b3c8ac1cd",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "musica vitoria",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "http://localhost:1880/vitoria.mp3",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 688.0908813476562,
+        "y": 886.0909423828125,
+        "wires": [
+            [
+                "8e6492224a709035"
+            ]
+        ]
+    },
+    {
+        "id": "8e6492224a709035",
+        "type": "ui_template",
+        "z": "7404dcbbdfa141d6",
+        "group": "3d31dca9f213fe21",
+        "name": "",
+        "order": 2,
+        "width": 10,
+        "height": 1,
+        "format": "\n<audio id=\"rpg-audio-player\" controls autoplay style=\"display: none;\"></audio>\n<div id=\"status-message\" style=\"color: red; margin-top: 5px;\"></div>\n\n<script>\n    (function(scope) {\n    const player = document.getElementById('rpg-audio-player');\n    const statusMessage = document.getElementById('status-message');\n\n    if (!player) {\n        console.error(\"Elemento de áudio 'rpg-audio-player' não encontrado no DOM.\");\n        statusMessage.innerText = \"Erro: Player de áudio não inicializado.\";\n        return; // Sai se o player não for encontrado\n    }\n\n    // Listener para o evento de erro de reprodução\n    player.addEventListener('error', function(e) {\n        console.error(\"Erro na reprodução de áudio (HTMLMediaElement error event):\", e);\n        let msg = \"Erro desconhecido ao reproduzir áudio.\";\n        switch (e.target.error.code) {\n            case e.target.error.MEDIA_ERR_ABORTED:\n                msg = \"Reprodução abortada pelo usuário.\";\n                break;\n            case e.target.error.MEDIA_ERR_NETWORK:\n                msg = \"Erro de rede ao carregar a mídia.\";\n                break;\n            case e.target.error.MEDIA_ERR_DECODE:\n                msg = \"Erro de decodificação da mídia. Formato não suportado?\";\n                break;\n            case e.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED:\n                msg = \"Formato de mídia não suportado ou URL inválida.\";\n                break;\n            default:\n                break;\n        }\n        statusMessage.innerText = msg;\n        console.warn(\"Detalhes do erro de áudio:\", msg);\n    });\n\n    // Event listener para quando o áudio começar a tocar (útil para feedback)\n    player.addEventListener('play', function() {\n        statusMessage.innerText = \"\"; // Limpa mensagens de erro/bloqueio\n        console.log(\"Áudio começou a tocar.\");\n    });\n\n    scope.$watch('msg', function(msg) {\n        if (!msg) return; // Garante que a mensagem não é nula\n\n        if (msg.command === 'stop') {\n            // Comando para parar a música\n            if (!player.paused) { // Se não estiver pausado, pare\n                player.pause();\n                player.currentTime = 0; // Reinicia para o começo\n                statusMessage.innerText = \"Reprodução parada.\";\n                console.log(\"Música parada pelo comando 'stop'.\");\n            } else {\n                statusMessage.innerText = \"Nenhuma música tocando.\";\n                console.log(\"Comando 'stop' recebido, mas nenhuma música estava tocando.\");\n            }\n        } else if (msg.payload && typeof msg.payload === 'string' && msg.payload.startsWith('http')) {\n            // É uma URL de música\n            const newSongUrl = msg.payload;\n\n            // Parar a música atual se estiver tocando para evitar sobreposição antes de carregar nova\n            if (!player.paused) {\n                player.pause();\n            }\n            player.currentTime = 0; // Reinicia para o começo\n\n            // Apenas atualiza e toca se a URL for diferente para evitar recargas desnecessárias\n            if (player.src !== newSongUrl) {\n                player.src = newSongUrl;\n                player.load(); // Recarrega a mídia\n            }\n            \n            // Tenta tocar. Navegadores podem bloquear autoplay sem interação do usuário.\n            player.play().catch(e => {\n                console.error(\"Erro ao tentar reproduzir áudio (autoplay bloqueado):\", e);\n                statusMessage.innerText = \"Atenção: O navegador bloqueou a reprodução automática. Por favor, clique em algum lugar da página para iniciar a música.\";\n            });\n        }\n    });\n})(scope);\n</script>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 988.0908813476562,
+        "y": 806.0909423828125,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4143cd32f9cee180",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "parar música",
+        "rules": [
+            {
+                "t": "set",
+                "p": "command",
+                "pt": "msg",
+                "to": "stop",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 678.0908813476562,
+        "y": 926.0909423828125,
+        "wires": [
+            [
+                "8e6492224a709035"
+            ]
+        ]
+    },
+    {
+        "id": "07b13acd6c531a33",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "Preparar MQTT Payload",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "msg.payload",
+                "tot": "msg",
+                "dc": true
+            },
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "IPB/IoT/tabletop/ambiente",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 728,
+        "y": 977,
+        "wires": [
+            [
+                "7229e81f674e829f"
+            ]
+        ]
+    },
+    {
+        "id": "af3c7729a0f102a6",
+        "type": "file",
+        "z": "7404dcbbdfa141d6",
+        "name": "Salvar Gravação Criptografada",
+        "filename": "filename",
+        "filenameType": "msg",
+        "appendNewline": false,
+        "createDir": true,
+        "overwriteFile": "true",
+        "encoding": "setbymsg",
+        "x": 1330,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4974691f33679690",
+        "type": "microphone",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "x": 234,
+        "y": 308,
+        "wires": [
+            [
+                "e1b5c7b458e18e2b"
+            ]
+        ]
+    },
+    {
+        "id": "82ef5af2f11547c2",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "function 8",
+        "func": "// Acessa o contador de arquivos do contexto global.\nlet contador = global.get(\"meuContadorDeArquivos\");\n\n// Inicializa o contador se ele não for um número válido.\nif (typeof contador !== 'number' || isNaN(contador)) {\n    contador = 0;\n}\n// Incrementa o contador.\ncontador++;\n// Salva o novo valor do contador no contexto global.\nglobal.set(\"meuContadorDeArquivos\", contador);\n\n// --- Verificação de dados: Crucial para garantir que o 'join' enviou tudo. ---\nif (!msg.payload) {\n    node.error(\"Erro nos dados do join. msg.payload está ausente.\", msg);\n    node.status({fill:\"red\", shape:\"dot\", text:\"msg.payload ausente\"});\n    return null; // Interrompe o fluxo se msg.payload estiver ausente\n}\n\nif (!msg.payload.chaveInfo) {\n    node.error(\"Erro nos dados do join. Faltando 'chaveInfo'.\", msg);\n    node.status({fill:\"red\", shape:\"dot\", text:\"chaveInfo ausente\"});\n    return null; // Interrompe o fluxo se 'chaveInfo' estiver ausente\n}\n\nif (!msg.payload.audioDados) {\n    node.error(\"Erro nos dados do join. Faltando 'audioDados'.\", msg);\n    node.status({fill:\"red\", shape:\"dot\", text:\"audioDados ausente\"});\n    return null; // Interrompe o fluxo se 'audioDados' estiver ausente\n}\n\nif (!msg.payload.iv) {\n    node.error(\"Erro nos dados do join. Faltando 'iv'.\", msg);\n    node.status({fill:\"red\", shape:\"dot\", text:\"iv ausente\"});\n    return null; // Interrompe o fluxo se 'iv' estiver ausente\n}\n\n\n// --- Prepara o objeto de dados para ser salvo no arquivo JSON. ---\n// Aqui pegamos os dados diretamente do msg.payload que veio do nó 'join'.\n// Convertemos os Buffers para Base64 para que possam ser armazenados como strings dentro do JSON.\nconst dadosParaSalvar = {\n    encryptedKeyInfo: msg.payload.chaveInfo, \n    encryptedAudioB64: msg.payload.audioDados.toString('base64'), \n    iv: msg.payload.iv \n};\n\n\n// --- Converte o objeto 'dadosParaSalvar' em uma STRING JSON para ser gravado no arquivo. ---\nmsg.payload = JSON.stringify(dadosParaSalvar);\n\n// --- Define o nome do arquivo e a ação de salvamento. ---\nmsg.filename = \"C:/Users/isabel/Downloads/gravacao_cripto_\" + contador + \".json\"; \n// --- Retorna a mensagem modificada para o nó 'file out'. ---\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1080,
+        "y": 260,
+        "wires": [
+            [
+                "61d0df2c241dd49d"
+            ]
+        ]
+    },
+    {
+        "id": "b74c964daee251ec",
+        "type": "rsa-encrypt",
+        "z": "7404dcbbdfa141d6",
+        "name": "rsa encrypt",
+        "publickey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApzpYsBgCW/ul2ANmwNc2 +lbDeGBdGk2/yZz+2wQFtcbau3rRCPYZPWIVVp/kBES+QYtE/goM4jtH85lpK1I5 cOnb0zDquBPdQdMV56SkMG6yAU9+nTSoFzFcAVlZm3WqJCbooZJGleRj/qZcAGRg 8e1HCxrAoRGRBG8B9F3xVgIziMSdi5EI9L/XuYk0aHDyvTdLXSmrnBYk+ITaBUJE o/mKC903fpYAHaATtC5vJzJYoH0/SUK55F9qwRVqQdEcLVYFjXmHrUOCEV905xCN KuI4KWrrFeSR/5esMg3761Y689N8CJZSIn19mDrlHUUjIS1DKdNHkx/kNyJDZmFF iwIDAQAB",
+        "x": 694,
+        "y": 168,
+        "wires": [
+            [
+                "659dbfe0a1814d84"
+            ]
+        ]
+    },
+    {
+        "id": "d4e2a04701a200de",
+        "type": "file in",
+        "z": "7404dcbbdfa141d6",
+        "name": "Ler Arquivo Criptografado",
+        "filename": "filename",
+        "filenameType": "msg",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 688,
+        "y": 418,
+        "wires": [
+            [
+                "803ad0cf73a94c5c"
+            ]
+        ]
+    },
+    {
+        "id": "354fc34d26e45a5f",
+        "type": "rsa-decrypt",
+        "z": "7404dcbbdfa141d6",
+        "name": "rsa decrypt",
+        "privatekey": "MIIFLTBXBgkqhkiG9w0BBQ0wSjApBgkqhkiG9w0BBQwwHAQI0wyEVKdFg3kCAggA MAwGCCqGSIb3DQIJBQAwHQYJYIZIAWUDBAEqBBCDk0NUbZFIdnjvrZd8N7qmBIIE 0IL4I6zfUOSsNKRjSCH92eQQZiVhxsKQsi2lXcQfosEkGNY2nl8gL+08/gxlokaW o1WY5eBkbFbxr+JSORTA/yuCzL6Dswa4DsuCnxzQdZuVSum8gIjxO3MwYJpdaRhE vIAVUvMHf86vVv6p8qOAiALIJzo7hCXBEqQchCm6YQB8s/cptV4AaBZDn/70mqkK cALRkUB0YWlxCU+pUT8bCtBK4OUy3lOzJgwmezeO3vE1z2lyWSav0fzGGoAtihlE U1OvdlvW+No8KzoO80dI1KTRBvhKa+BOiRL8yTblnKyuEVlGWwZjbfd8jocJ9KzX dGVOUpHIVVsNuh9iKqX0JzWqn7MgujVaCnKduHD2ZkmzU1G7BSn7Jdwlw+4sZdQA fnFqXBpz91tsPMsvqhoNXO3fRy7FKv+i2gWXOXD/yvIRDUo5XTevJq5yxc1uLlpn tlSoci8vKuRKGuACuj5qUhlpd3xWENOgsZvkQca46Cqn4JH3WK5ltLmXzr0hwJ8I faMZ3TgpOlhWzSIirQcj4S791H1p4WK9KkOjjoZZYjRiF1QWvOo16c7tPq7trSAG w0o+v/9e3WXHbA0ehnXaWCp0GltPqInqo7AzDUFy+icdoL2XetRuJORJS8JhZwTD py/ZkJil3Y7CBvyj0B0aVfvIqnLa0McPskvCgsKzjEDOxtFT3pc/8pPOqJOMtxm9 O3eJextoc0RebfFB/rnd0y32tg+Rsu0SagDbFFZ3xtLD24WEMnvQTsEE5LOy4OeN AhEBqo5XLVrsPCCa5nA+PyqlkIbCvGtQajlzgQh0m63xbB4Kx78NVCNS+4ColfE1 +2ExMJRkLm1voNsEu24q6O0A1mBIp/JULFOANi85hNiGV8ufvJYs5Fz9VG9SlTTG kI85uotpIPKEmz9mMMj/3oO95hUjGttF/xI/1FA1dyTXDdnS6kyOU/kSRTUtnHSk kGkgiSwKtZhd0FdT+4mBcV+04CGqbdgsq/mnjnStC0n6NLBTBe+vAXS1VrqP+nK0 vflMOuiBn6btrAUAi4waQWGmT+SG/ElNM/JsTnXigtExCBUtkMh/BaiBu1HOd7qg 7KY4IqufDe0K4A9wrqi23VfYLIWH+G2UlC4i+5IuLvjRYWtJCkiyMM2VxXAAc+bJ a56x8pZb/jJrudks1BQqfhdBnViYQBnKzcB+6IxDgEDYsgGg93c2o6pzKfytz2Ej UAikJGono25ClZDpQtKrs+XKVP/S/ToxPR6sGgeK2QOu6H9hZ41G/f1SueffcrQh 6Gx+GlyqyJ4F0WCvfJ/M4BD4GbyCHNacbYLGNhDLXeZiciCiWHgpAqlf9dNnxVnB fO4vcihcxluh8+isjxdXW8CpjsW2UjIEgp1YAdNoAyN+C2bBaVzKG3tH8UrAcyxF cVfW0uJPthMT7G9Xd0w+UL/3nBYXIx1mbbpR6FFO9xXlqVYzOgsDYHwJyOB0Ox8F UEaP3k/Fv8nGUaMq9//B1RfOccC+rqvw6jFE5A5UCR+KKhpRvVm/aZKwGDlgaMZn jhAzIcetlMDU4Qyhg///sbzoNlEQDdi1ucMYd0KLMm8MZ3+Y81Q5f4GXn9uuNldg 26QLfFGr3a2tmoyUm8FjFWTv1gLSDGTok8+eK6SNC14h",
+        "x": 1208,
+        "y": 398,
+        "wires": [
+            [
+                "e11b8aaf9c13ad42"
+            ]
+        ]
+    },
+    {
+        "id": "9c822d99692c8134",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "function 10",
+        "func": "const crypto = global.get('crypto');\n\nif (!crypto) {\n    node.error(\"Módulo crypto não disponível. Configure-o em functionGlobalContext no settings.js.\");\n    return null;\n}\n\ntry {\n    const combinedData = msg.payload;\n\n    if (!combinedData.chaveInfo || !combinedData.chaveInfo.key || !combinedData.chaveInfo.iv) {\n        node.error(\"Erro: Dados da chave AES descriptografada (chaveInfo) incompletos.\", msg);\n        return null;\n    }\n    const aesKeyBase64 = combinedData.chaveInfo.key; // Chave AES em Base64\n    const aesIvFromRsaBundleBase64 = combinedData.chaveInfo.iv; // IV que estava junto com a chave AES no bundle RSA\n\n    // Converter a chave AES Base64 para Buffer\n    const key = Buffer.from(aesKeyBase64, 'base64');\n\n    // --- 2. Extrair o Áudio AES Criptografado e o IV Original do Arquivo ---\n    if (!combinedData.encrypted_audio_and_iv || !combinedData.encrypted_audio_and_iv.encryptedAudioB64 || !combinedData.encrypted_audio_and_iv.iv) {\n        node.error(\"Erro: Dados do áudio criptografado ou IV original incompletos.\", msg);\n        return null;\n    }\n    const encryptedAudioB64 = combinedData.encrypted_audio_and_iv.encryptedAudioB64;\n    const ivOriginalDoArquivoBase64 = combinedData.encrypted_audio_and_iv.iv; // IV original do arquivo em Base64\n\n    // Converter o áudio criptografado Base64 para Buffer\n    const encryptedAudioBuffer = Buffer.from(encryptedAudioB64, 'base64');\n    // Converter o IV original do arquivo Base64 para Buffer (ESTE É O IV A SER USADO PARA DESCRIPTOGRAFAR O ÁUDIO)\n    const ivBufferParaDecifrar = Buffer.from(ivOriginalDoArquivoBase64, 'base64');\n\n    // --- 3. Descriptografar o Áudio ---\n    const algorithm = 'aes-256-cbc';\n    // Use a chave AES descriptografada (do RSA) e o IV que veio junto com o áudio no arquivo.\n    const decipher = crypto.createDecipheriv(algorithm, key, ivBufferParaDecifrar);\n\n    // Concatena os chunks descriptografados para obter o Buffer de áudio original\n    const decryptedAudioBuffer = Buffer.concat([decipher.update(encryptedAudioBuffer), decipher.final()]);\n\n    // --- 4. Preparar a Saída para Reprodução ---\n    msg.payload = decryptedAudioBuffer; // O payload principal é o áudio descriptografado (Buffer)\n\n    // Para o nó 'template' ou 'UI Audio' poder oferecer download/reprodução:\n    msg.wav_base64_para_template = decryptedAudioBuffer.toString('base64');\n    msg.wav_mimetype_para_template = 'audio/wav'; // Assumindo que o áudio original era WAV\n\n    node.status({text: \"Áudio descriptografado!\"});\n    return msg;\n\n} catch (e) {\n    node.error(\"Falha na descriptografia AES ou processamento: \" + e.message, msg);\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1768,
+        "y": 458,
+        "wires": [
+            [
+                "99ecd8898aeea62d"
+            ]
+        ]
+    },
+    {
+        "id": "99ecd8898aeea62d",
+        "type": "ui_template",
+        "z": "7404dcbbdfa141d6",
+        "group": "44bddd3ed258efcf",
+        "name": "",
+        "order": 2,
+        "width": 10,
+        "height": 2,
+        "format": "html <div style=\"padding: 10px;\">\n    <h4>Áudio Decriptografado</h4>\n    <div ng-if=\"msg.wav_base64_para_template\">\n         <a class=\"md-button md-raised\"\n            ng-href=\"{{'data:' + msg.wav_mimetype_para_template + ';base64,' + msg.wav_base64_para_template}}\"\n            download=\"gravacao_decriptada.wav\"> Download WAV Decriptografado </a> </div>\n    <p ng-if=\"!msg.wav_base64_para_template && msg.topic !== 'node-red-dashboard-action'\"> Nenhum áudio para mostrar ou\n        ocorreu um erro. Verifique o log do Node-RED. </p>\n</div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1798,
+        "y": 558,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3b7155178fa83d24",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "function 9",
+        "func": "const contadorTexto = flow.get(\"contadorParaDecriptar\");\n\n\nif (typeof contadorTexto === 'undefined' || contadorTexto === null || String(contadorTexto).trim() === \"\") {\n    node.error(\"Contador para decriptar não foi especificado ou está vazio. Valor lido: '\" + contadorTexto + \"'.\");\n    return null;\n}\n\nconst contadorNumero = parseInt(contadorTexto);\n\nif (isNaN(contadorNumero)) {\n    node.error(\"O valor do contador '\" + contadorTexto + \"' não é um número válido.\");\n    return null;\n}\n\n// Adiciona a propriedade 'filename' ao objeto 'msg' que veio do botão\nmsg.filename = \"C:/Users/isabel/Downloads/gravacao_cripto_\" + contadorNumero + \".json\";\n\n\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 478,
+        "y": 418,
+        "wires": [
+            [
+                "d4e2a04701a200de"
+            ]
+        ]
+    },
+    {
+        "id": "e1b5c7b458e18e2b",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "Gera Chave AES & Criptografa Áudio",
+        "func": "const crypto = global.get('crypto');\nif (!crypto) {\n    node.error(\"Módulo 'crypto' não disponível. Verifique settings.js e reinicie o Node-RED.\", msg);\n    return null;\n}\n\nconst algorithm = 'aes-256-cbc';\nconst key = crypto.randomBytes(32);\nconst iv = crypto.randomBytes(16);\nconst audioBufferDoMicrofone = msg.payload;\n\ntry {\n    const cipher = crypto.createCipheriv(algorithm, key, iv);\n    const audioCriptografadoComAES = Buffer.concat([cipher.update(audioBufferDoMicrofone), cipher.final()]);\n\n    const keyInfoParaCriptografiaRSA = { \n        key: key.toString('base64'), \n        iv: iv.toString('base64') \n    };\n\n    // Retorna DUAS mensagens:\n    // 1. Para o rsa encrypt: msg.payload com keyInfoParaCriptografiaRSA\n    // 2. Para o nó 'definir msg.payload' do áudio: msg.payload com audioCriptografadoComAES\n    return [\n        { payload: keyInfoParaCriptografiaRSA }, \n        { payload: audioCriptografadoComAES },\n        { payload: iv.toString('base64') }\n    ];\n\n} catch (e) {\n    node.error(\"Erro na criptografia AES: \" + e.message, msg);\n    return null;\n}",
+        "outputs": 3,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 354,
+        "y": 228,
+        "wires": [
+            [
+                "b74c964daee251ec"
+            ],
+            [
+                "0d6cf243b25b76df"
+            ],
+            [
+                "09ac1d1e5f416ec6"
+            ]
+        ]
+    },
+    {
+        "id": "5dbc68c7d421ff7a",
+        "type": "ui_text_input",
+        "z": "7404dcbbdfa141d6",
+        "name": "Arquivo para Decriptar",
+        "label": "Audio para decryptar Ex: 1",
+        "tooltip": "",
+        "group": "44bddd3ed258efcf",
+        "order": 1,
+        "width": 10,
+        "height": 1,
+        "passthru": true,
+        "mode": "text",
+        "delay": 300,
+        "topic": "payload",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 220,
+        "y": 440,
+        "wires": [
+            [
+                "b0e109df2c1b098d"
+            ]
+        ]
+    },
+    {
+        "id": "b0e109df2c1b098d",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "contadorParaDecriptar",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 398,
+        "y": 538,
+        "wires": [
+            [
+                "3b7155178fa83d24"
+            ]
+        ]
+    },
+    {
+        "id": "2d885983b52c9845",
+        "type": "ui_button",
+        "z": "7404dcbbdfa141d6",
+        "name": "Salvar (novo log)",
+        "group": "861cd6ef73f811d9",
+        "order": 4,
+        "width": 3,
+        "height": 1,
+        "passthru": false,
+        "label": "Salvar",
+        "tooltip": "",
+        "color": "white",
+        "bgcolor": "blue",
+        "className": "",
+        "icon": "save",
+        "payload": "logNumber",
+        "payloadType": "flow",
+        "topic": "gravado em log",
+        "topicType": "str",
+        "x": 245,
+        "y": 1473,
+        "wires": [
+            [
+                "2b66d99bc5db8b9e",
+                "58c1de264e63e029"
+            ]
+        ]
+    },
+    {
+        "id": "2b66d99bc5db8b9e",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "Incrementar log",
+        "func": "let current = flow.get(\"logNumber\") || 1;\ncurrent++;\nflow.set(\"logNumber\", current);\n\n// Limpa o conteúdo das anotações exibidas no dashboard\nflow.set(\"anotacoesCorrentes\", \"\");\n\n// Envia uma mensagem com payload vazio para limpar o nó ui_text\nmsg.payload = \"\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 495,
+        "y": 1473,
+        "wires": [
+            [
+                "9562fd0b1920b80f"
+            ]
+        ]
+    },
+    {
+        "id": "58c1de264e63e029",
+        "type": "ui_toast",
+        "z": "7404dcbbdfa141d6",
+        "position": "top right",
+        "displayTime": "2",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "className": "",
+        "topic": "Arquivo guardada",
+        "name": "nota completa gravada",
+        "x": 495,
+        "y": 1513,
+        "wires": []
+    },
+    {
+        "id": "9562fd0b1920b80f",
+        "type": "ui_text",
+        "z": "7404dcbbdfa141d6",
+        "group": "861cd6ef73f811d9",
+        "order": 5,
+        "width": 12,
+        "height": 2,
+        "name": "Anotações visíveis",
+        "label": "Anotações da Sessão:",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 765,
+        "y": 1473,
+        "wires": []
+    },
+    {
+        "id": "d46ad045dffe7d85",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "Preparar log",
+        "func": "// Pega o texto salvo no flow\n//let texto = flow.get(\"textoDigitado\") || \"\";\n//let logNum = flow.get(\"logNumber\") || 1;\n\n//msg.payload = texto + \"\\n\";\n//msg.filename = \"C:/Users/Caio/Desktop/EEC/IoT/Projeto Final/notas/log\"+ logNum + \".txt\"; // ajuste o caminho/path\n//return msg;\n\n// Node: Preparar log (58e5ff4371b3c4f3)\n// Esta função irá agora acumular o texto para exibição e preparar o texto para o arquivo.\n\nlet textoNovo = flow.get(\"textoDigitado\") || \"\"; // Texto da caixa de input \"Insira o texto:\"\nlet anotacoesAnteriores = flow.get(\"anotacoesCorrentes\") || \"\"; // Texto já exibido\nlet logNum = flow.get(\"logNumber\") || 1;\n\nlet textoParaArquivo = textoNovo + \"\\n\"; // O que será escrito no arquivo de log atual\n\n// Atualizar o texto que será exibido no dashboard\nlet textoAtualizadoParaDisplay;\nif (anotacoesAnteriores === \"\") {\n    textoAtualizadoParaDisplay = textoNovo;\n} else {\n    // Adiciona o novo texto na linha seguinte do que já estava exibido\n    textoAtualizadoParaDisplay = anotacoesAnteriores + \"\\n\" + textoNovo;\n}\nflow.set(\"anotacoesCorrentes\", textoAtualizadoParaDisplay);\n\n// Mensagem para a primeira saída (gravar no arquivo)\nlet msgArquivo = {\n    payload: textoParaArquivo,\n    filename: \"C:/Users/isabel/Downloads/log\" + logNum + \".txt\" // Verifique/ajuste este caminho\n};\n\n// Mensagem para a segunda saída (exibir no dashboard)\nlet msgDisplay = {\n    payload: textoAtualizadoParaDisplay\n\n};\n\n// O nó \"function 6\" (62d85405514813f3) já limpa o campo de input \"Insira o texto:\",\n// o que é bom. flow.set(\"textoDigitado\", \"\"); não é necessário aqui se essa ligação existir.\n\nreturn [msgArquivo, msgDisplay];",
+        "outputs": 2,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 405,
+        "y": 1373,
+        "wires": [
+            [
+                "616350b911d5ca2a"
+            ],
+            [
+                "9562fd0b1920b80f"
+            ]
+        ]
+    },
+    {
+        "id": "d3d37b0df5a40c27",
+        "type": "ui_button",
+        "z": "7404dcbbdfa141d6",
+        "name": "Enviar",
+        "group": "861cd6ef73f811d9",
+        "order": 3,
+        "width": 3,
+        "height": 1,
+        "passthru": false,
+        "label": "Enviar",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "send",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "",
+        "topicType": "str",
+        "x": 225,
+        "y": 1333,
+        "wires": [
+            [
+                "d46ad045dffe7d85",
+                "7e211b28aa8dec30"
+            ]
+        ]
+    },
+    {
+        "id": "ddb8e30191c6b968",
+        "type": "file",
+        "z": "7404dcbbdfa141d6",
+        "name": "Gravar no log",
+        "filename": "filename",
+        "filenameType": "msg",
+        "appendNewline": false,
+        "createDir": true,
+        "overwriteFile": "false",
+        "encoding": "utf8",
+        "x": 895,
+        "y": 1373,
+        "wires": [
+            [
+                "36a3e4075ddd1c27"
+            ]
+        ]
+    },
+    {
+        "id": "7e211b28aa8dec30",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "function 11",
+        "func": "msg.payload = \"\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 395,
+        "y": 1313,
+        "wires": [
+            [
+                "d611b6076165329a"
+            ]
+        ]
+    },
+    {
+        "id": "36a3e4075ddd1c27",
+        "type": "ui_toast",
+        "z": "7404dcbbdfa141d6",
+        "position": "top right",
+        "displayTime": "2",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "className": "",
+        "topic": "Anotação guardada",
+        "name": "nota gravada",
+        "x": 1105,
+        "y": 1413,
+        "wires": []
+    },
+    {
+        "id": "d611b6076165329a",
+        "type": "ui_text_input",
+        "z": "7404dcbbdfa141d6",
+        "name": "Campo de texto",
+        "label": "Insira o texto:",
+        "tooltip": "",
+        "group": "861cd6ef73f811d9",
+        "order": 1,
+        "width": 12,
+        "height": 1,
+        "passthru": false,
+        "mode": "text",
+        "delay": 300,
+        "topic": "",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "str",
+        "x": 575,
+        "y": 1313,
+        "wires": [
+            [
+                "d39cd11b29a23039"
+            ]
+        ]
+    },
+    {
+        "id": "d39cd11b29a23039",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "Guardar entrada",
+        "rules": [
+            {
+                "t": "set",
+                "p": "textoDigitado",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 780,
+        "y": 1300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ee3eb3ede1e0d1c3",
+        "type": "rsa-generate-keypair",
+        "z": "7404dcbbdfa141d6",
+        "name": "rsa generate keypair",
+        "bitlength": "2048",
+        "passphrase": "",
+        "x": 695,
+        "y": 1221,
+        "wires": [
+            [
+                "5841f0ede2cd9a02"
+            ]
+        ]
+    },
+    {
+        "id": "57b88fab313c951c",
+        "type": "inject",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 335,
+        "y": 1221,
+        "wires": [
+            [
+                "ee3eb3ede1e0d1c3"
+            ]
+        ]
+    },
+    {
+        "id": "5841f0ede2cd9a02",
+        "type": "file",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "filename": "C:/Users/isabel/Downloads/keysNotes.txt",
+        "filenameType": "str",
+        "appendNewline": false,
+        "createDir": false,
+        "overwriteFile": "true",
+        "encoding": "none",
+        "x": 1075,
+        "y": 1241,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "616350b911d5ca2a",
+        "type": "rsa-encrypt",
+        "z": "7404dcbbdfa141d6",
+        "name": "rsa encrypt",
+        "publickey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqZauhpEcTbyvy5O5Q7Pp HAWOVqZ6njHSFn/eFLveZm4IijZE88ebbkparYh1j6F5h+cpL1X6/jxgRXyzBDYZ 2LXHC+6z/T8M4+kKKHFYV0H1qrePFACYglP/ZNZ4hgRB6CUqfN04I7uR8It5MZTJ ++fmP1Q5bsWeJK4D3cQSm9nJaHeBwmm2F9uL+cjfTnP6EOmjuJHfTxK6LxddtGJf YJuWm6GUqUphJWSDJ1cHFMr0xJnjiC7ZVnevKj63ACjs2zGo40WU2DSyyiUvwKzX ZlT4IBsNS65sRrpUDrRLRpJIGt9JeM3BEn5HBRFOBB1V4OO5QltYQDe+7pNoTHIa TwIDAQAB",
+        "x": 665,
+        "y": 1373,
+        "wires": [
+            [
+                "ddb8e30191c6b968"
+            ]
+        ]
+    },
+    {
+        "id": "460de7667cb3a914",
+        "type": "rsa-decrypt",
+        "z": "7404dcbbdfa141d6",
+        "name": "rsa decrypt",
+        "privatekey": "MIIFLTBXBgkqhkiG9w0BBQ0wSjApBgkqhkiG9w0BBQwwHAQIyy9ObayAAaICAggA MAwGCCqGSIb3DQIJBQAwHQYJYIZIAWUDBAEqBBAEBRNS2Mo9TpVCbIONPCMFBIIE 0CybzWlEuEC7PtPzVs9gjNco+0fnd0ubMIBGa7rrBgv/oAXpKTeRkJdOAN3DcTEz IW34VuAVzR4jgiCHulDTOdm1jp8kYo5N16gjxDxjXwCizScHnE5HT2woqmrOURJX /OeFCSmxlhRaYAd825pdV56k/7vJyIvypjt2ZEJY3/ki8fVDN4ZLqR5ahzxJpPsI XhojASs7PCLjedI62TGz5mxd6NH0kmjeZQxnCs71bZxRG1y4gVlDyB+0IQkv5J/+ 1RgAVgUIfgl42FWlxCwLsNrGGAhjDWz5kBv5P03xvN/FvTfAMvue5ByfBR3Cfr5b skVw2vE5iiQ0+OC4YOzVLleZCherWBSIDZFqMI6CzzpHSBdhS1+o/77iwnGUHO5H C8d0ML18of1TACjfE7w1zVKOKftZmBMBZ2sCgnEWzugYybAdApBq5W1GUS1Gm5G4 HvmW426K/ePM2+WAFYzNhcdTVWRKPeZOVU5+0xWu1Kn/LL06N+pje+EG3/CJwZHi kBqevIGekUcoc2Na9/q4sMr/V34RHbPgU7/xxQCUCLBOq+/6xx8839ZLnShpFKLy 7NcjharyLIPOjILbd2Ym7rE4PM9NAIklVSAK71IJR/RZtZnPKNqQBQm6xAkixLKF oujr2IT+v8D2qUA7qh2NHS/A8Yh11ACMODtcepNm2unxbmccS1LGWGlhEq1+pmxz DMOmohNgMOjLUAsoPzh/x6pXqq7/LRGcUUzRem/v/4zJGd8kmi4kATvRrRFxZ7Yx fHtlyr6ELhtKr+x+Uqi8cKSYGVOeBL9zPKQRWnFEnJgB6d2n119GfJ7PFoELVSlB FdfKI57nSE4thPCdElOicUpIqYWMKzo1RtZmTcTZ3mR6Zong/AHeVkIwopAWtFL0 el+QbM8mhvrWXSn1seI0r2ZWKNdYz/ANVLHHWrJMQ7dEKlrh6cNZHyIKeMqdhJ09 rYEQnJ31gpuR0RrtHN5LehOlkMk4Z4JSrE/K4kIJP6zIAWAVVc3NJ9SvhZW3scZG yxs2Nd7MiclC51Or4caCK3qeJH0StXbqrBwS/9Z75wEUp6Z250y2mqR0pZmX4Ap3 A1Mk3rlI2wa6lfPFUaPY7/+RwXR9+co1m1gQpAUFK0B7CULq2pEIgUewBiT6V3/8 EXupe4fcsEtInWXb150WFPti7n5wwo0N+7RebfIpkqAPmGjZOAl2JBdNF8vaZMvd WMurQbIoxyqLXIvVpOtNE6Rkgemx1m1UaUqr1Z2llFl1ixrvcDOq0bMrhlSVlpO/ 3bVgcr2b/PWrXyHvUN4NUV/OHYHJKBGuwv1Z1OHq8VIS+cWmJlij4Mz+GToAHQ3n E1DvmDG75EKp0UNppNNF6xA9ZHC92AVYMWnxMJ7BL1cVZmmQ9APzLMQ6oo6k+RSL AIbO4aikbCxdBLoo6sbr/MhF11ODSLKfH/suSn9CZroLgbE78C0kXzcuEIX0Vxk5 zphnoAEguI9bl+IMy/f8r9MrE9Xk7hXIK3YGAJ9BkdqVCJTmypd/NQd0kVR0n/q0 PG51uhUaJipxdpgBvPdj6g7u7WOr/z534dEKttVMePMLJolpgw2au7xLIMFhRSlk 6NRj5Zya53XIcLYuAdTqEG1YM+ihWB2nX625pFWUXkT6",
+        "x": 1025,
+        "y": 1693,
+        "wires": [
+            [
+                "9562fd0b1920b80f"
+            ]
+        ]
+    },
+    {
+        "id": "5729a4615a39f5bb",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "function 12",
+        "func": "// The number from the text input will be in msg.payload\nconst numero = flow.get(\"contadorParaDecriptarNotes\");\n\n\nif (numero) {\n    msg.filename = \"C:/Users/isabel/Downloads/log\" + numero + \".txt\";\n} else {\n    node.warn(\"ContadorNumero not found or empty. Cannot construct filename.\");\n    return null;\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 605,
+        "y": 1693,
+        "wires": [
+            [
+                "9d2010690a1ecfb4"
+            ]
+        ]
+    },
+    {
+        "id": "9d2010690a1ecfb4",
+        "type": "file in",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "filename": "filename",
+        "filenameType": "msg",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 805,
+        "y": 1693,
+        "wires": [
+            [
+                "460de7667cb3a914"
+            ]
+        ]
+    },
+    {
+        "id": "659dbfe0a1814d84",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "chaveInfo",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 704,
+        "y": 228,
+        "wires": [
+            [
+                "4ca025e88d3db58e"
+            ]
+        ]
+    },
+    {
+        "id": "4ca025e88d3db58e",
+        "type": "join",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "mode": "custom",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "useparts": false,
+        "accumulate": false,
+        "timeout": "5",
+        "count": "3",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "num",
+        "reduceFixup": "",
+        "x": 914,
+        "y": 268,
+        "wires": [
+            [
+                "82ef5af2f11547c2"
+            ]
+        ]
+    },
+    {
+        "id": "0d6cf243b25b76df",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "originalPayload",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "audioDados",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 704,
+        "y": 268,
+        "wires": [
+            [
+                "4ca025e88d3db58e"
+            ]
+        ]
+    },
+    {
+        "id": "09ac1d1e5f416ec6",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "iv",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 704,
+        "y": 308,
+        "wires": [
+            [
+                "4ca025e88d3db58e"
+            ]
+        ]
+    },
+    {
+        "id": "cbe503678e6c92ed",
+        "type": "rsa-generate-keypair",
+        "z": "7404dcbbdfa141d6",
+        "name": "rsa generate keypair",
+        "bitlength": "2048",
+        "passphrase": "",
+        "x": 640,
+        "y": 100,
+        "wires": [
+            [
+                "076658c9ae8696a0"
+            ]
+        ]
+    },
+    {
+        "id": "db9bd829835c729c",
+        "type": "inject",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 280,
+        "y": 100,
+        "wires": [
+            [
+                "cbe503678e6c92ed"
+            ]
+        ]
+    },
+    {
+        "id": "803ad0cf73a94c5c",
+        "type": "json",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 868,
+        "y": 418,
+        "wires": [
+            [
+                "48d906f5b7cac784"
+            ]
+        ]
+    },
+    {
+        "id": "076658c9ae8696a0",
+        "type": "file",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "filename": "C:/Users/isabel/Downloads/keysAudio.txt",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "true",
+        "encoding": "none",
+        "x": 1000,
+        "y": 100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "61d0df2c241dd49d",
+        "type": "file",
+        "z": "7404dcbbdfa141d6",
+        "name": "Salvar Gravação Criptografada",
+        "filename": "filename",
+        "filenameType": "msg",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "true",
+        "encoding": "setbymsg",
+        "x": 1350,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "48d906f5b7cac784",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "function 7",
+        "func": "const aesEncryptedAudioBase64 = msg.payload.encryptedAudioB64;\nconst aesIvBase64 = msg.payload.iv;\nconst encryptedKeyInfo = msg.payload.encryptedKeyInfo;\n\n\nconst msgParaRsaDescriptografia = {\n    payload: Buffer.from(encryptedKeyInfo, 'base64'), // Converte a string Base64 para Buffer\n    _msgid: msg._msgid\n};\n\nconst msgParaJoin = {\n    payload: {\n        encryptedAudioB64: aesEncryptedAudioBase64,\n        iv: aesIvBase64\n    },\n    _msgid: msg._msgid\n};\n\n\nreturn [\n    msgParaRsaDescriptografia, // Saída 1: Vai para o RSA Decrypt\n    msgParaJoin                // Saída 2: Vai para o nó 'Change' (que adiciona o topic) e depois para o 'Join'\n];\n\n",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1018,
+        "y": 418,
+        "wires": [
+            [
+                "354fc34d26e45a5f"
+            ],
+            [
+                "59523a06b6a5040c"
+            ]
+        ]
+    },
+    {
+        "id": "59523a06b6a5040c",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "encrypted_audio_and_iv",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1218,
+        "y": 458,
+        "wires": [
+            [
+                "af1badbf88727add"
+            ]
+        ]
+    },
+    {
+        "id": "af1badbf88727add",
+        "type": "join",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "mode": "custom",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "useparts": false,
+        "accumulate": true,
+        "timeout": "5",
+        "count": "2",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 1598,
+        "y": 458,
+        "wires": [
+            [
+                "9c822d99692c8134"
+            ]
+        ]
+    },
+    {
+        "id": "e11b8aaf9c13ad42",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "chaveInfo",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1418,
+        "y": 398,
+        "wires": [
+            [
+                "af1badbf88727add"
+            ]
+        ]
+    },
+    {
+        "id": "e914007efe21fb4c",
+        "type": "ui_text_input",
+        "z": "7404dcbbdfa141d6",
+        "name": "Arquivo para Decriptar",
+        "label": "Nota para decryptar Ex: 1",
+        "tooltip": "",
+        "group": "861cd6ef73f811d9",
+        "order": 7,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "mode": "text",
+        "delay": 300,
+        "topic": "payload",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 220,
+        "y": 1680,
+        "wires": [
+            [
+                "edad19de2a630799"
+            ]
+        ]
+    },
+    {
+        "id": "850275f11c5d4155",
+        "type": "inject",
+        "z": "7404dcbbdfa141d6",
+        "name": "inicialização",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "control_combat_state",
+        "payload": "false",
+        "payloadType": "bool",
+        "x": 210,
+        "y": 2060,
+        "wires": [
+            [
+                "4362e16e2f40265d"
+            ]
+        ]
+    },
+    {
+        "id": "4362e16e2f40265d",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "Estado de combate",
+        "func": "// Número de linhas de combatentes\nconst NUM_ROWS = 6;\nlet combat_active = msg.payload;\nflow.set(\"combat_active\", combat_active);\n\nlet currentRoundToShow = flow.get(\"current_round_count\") || 0; // Pega o valor atual ou default para 0\n\nif (combat_active) { // Se o combate está a começar\n    flow.set(\"current_turn_count\", 0); // Inicia ou reinicia a contagem de turnos\n    flow.set(\"current_round_count\", 1); // Combate começa na Rodada 1\n    currentRoundToShow = 1;\n} else { // Se o combate está a FINALIZAR ou no estado inicial (combat_active é false)\n    if (msg.clear === true) { // E se é para limpar os dados (botão \"Finalizar Combate\")\n        flow.set(\"current_turn_count\", 0);\n        flow.set(\"current_round_count\", 0); // Reinicia para 0 quando finalizado e limpo\n        currentRoundToShow = 0;\n        //name_val = \"\";\n        //init_val = 0; // Para ui_numeric, null geralmente limpa o campo\n        //flow.set(\"name_\" + i, name_val);\n        //flow.set(\"initiative_\" + i, init_val);\n    }\n    if (!combat_active && msg.clear === true) { // Se o combate está a terminar e a limpar\n        flow.set(\"current_turn_count\", 0);\n    }// ... (seu código existente para limpar nomes e iniciativas no flow context) ...\n    }    // Se não for para limpar (ex: estado inicial antes do primeiro combate), currentRoundToShow já tem o valor do flow ou 0.\n\nlet messages = [];\n\n// Move a lógica de limpeza de flow context para FORA do loop 'for'\n// ou assegure-se que ela seja executada uma única vez e afete todos os valores.\n// No seu caso, já está dentro do if (combat_active) ou else, o que é bom.\n\nfor (let i = 0; i < NUM_ROWS; i++) {\n    let name_val;\n    let init_val;\n\n    if (msg.clear === true) {\n        // Quando clear é true, queremos limpar tudo\n        name_val = \"\";\n        init_val = 0; // ou null, dependendo de como o ui_numeric se comporta com null\n        flow.set(\"name_\" + i, name_val);\n        flow.set(\"initiative_\" + i, init_val);\n    } else {\n        // Se não é para limpar, pegue os valores do flow context\n        name_val = flow.get(\"name_\" + i) || \"\";\n        init_val = flow.get(\"initiative_\" + i); // Pode ser null ou undefined\n    }\n\n    // Mensagem para o campo Nome da linha i\n    messages.push({\n        payload: name_val,\n        enabled: combat_active // Usa o estado atual de combat_active\n    });\n    // Mensagem para o campo Iniciativa da linha i\n    messages.push({\n        payload: init_val,\n        enabled: combat_active\n    });\n\n\n}\n\n// O currentRoundToShow e o contador de rodadas são separados para a saída 13\n// Você está enviando currentRoundToShow NUM_ROWS vezes.\n// Provavelmente você quer que a última saída seja apenas para a rodada.\n// Mantenha apenas UMA mensagem para currentRoundToShow\nmessages.push({ payload: currentRoundToShow });\n\nreturn [messages[0], messages[1], messages[2], messages[3], messages[4], messages[5], messages[6], messages[7], messages[8], messages[9], messages[10], messages[11], messages[12], messages[13]];",
+        "outputs": 13,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 610,
+        "y": 2140,
+        "wires": [
+            [
+                "2aa02cd26d58b7ae"
+            ],
+            [
+                "0ec243689781dbdb"
+            ],
+            [
+                "35da47b87434b059"
+            ],
+            [
+                "fc7e7301c14fe899"
+            ],
+            [
+                "09859ebe8d4d271e"
+            ],
+            [
+                "f2573c537fe82095"
+            ],
+            [
+                "3fe322326a8768cb"
+            ],
+            [
+                "de6b9467201893cc"
+            ],
+            [
+                "df82c1f09cca3d4d"
+            ],
+            [
+                "c481dea4c4b2bd0c"
+            ],
+            [
+                "324ddff4823aea6e"
+            ],
+            [
+                "a540166935bd2cd2"
+            ],
+            [
+                "ebd8f06d1087d6e0"
+            ]
+        ]
+    },
+    {
+        "id": "d51b19276635cd32",
+        "type": "ui_button",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "group": "7930c8158455088c",
+        "order": 20,
+        "width": 4,
+        "height": 1,
+        "passthru": false,
+        "label": "Iniciar combate",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "topic": "combat_active",
+        "topicType": "msg",
+        "x": 200,
+        "y": 2100,
+        "wires": [
+            [
+                "4362e16e2f40265d"
+            ]
+        ]
+    },
+    {
+        "id": "9155c2742ca39fa9",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "clear",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 380,
+        "y": 2160,
+        "wires": [
+            [
+                "4362e16e2f40265d"
+            ]
+        ]
+    },
+    {
+        "id": "2aa02cd26d58b7ae",
+        "type": "ui_text_input",
+        "z": "7404dcbbdfa141d6",
+        "name": "1º nome",
+        "label": "",
+        "tooltip": "",
+        "group": "7930c8158455088c",
+        "order": 2,
+        "width": 8,
+        "height": 1,
+        "passthru": true,
+        "mode": "text",
+        "delay": 300,
+        "topic": "topic",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 920,
+        "y": 1940,
+        "wires": [
+            [
+                "3c07680a4231d1ca"
+            ]
+        ]
+    },
+    {
+        "id": "0ec243689781dbdb",
+        "type": "ui_numeric",
+        "z": "7404dcbbdfa141d6",
+        "name": "1º",
+        "label": "Inic.",
+        "tooltip": "",
+        "group": "7930c8158455088c",
+        "order": 3,
+        "width": 3,
+        "height": 1,
+        "wrap": false,
+        "passthru": true,
+        "topic": "update_initiative_0",
+        "topicType": "msg",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "30",
+        "step": 1,
+        "className": "",
+        "x": 910,
+        "y": 1980,
+        "wires": [
+            [
+                "7a6a79b923cc963a"
+            ]
+        ]
+    },
+    {
+        "id": "35da47b87434b059",
+        "type": "ui_text_input",
+        "z": "7404dcbbdfa141d6",
+        "name": "2º nome",
+        "label": "",
+        "tooltip": "",
+        "group": "7930c8158455088c",
+        "order": 5,
+        "width": 8,
+        "height": 1,
+        "passthru": true,
+        "mode": "text",
+        "delay": 300,
+        "topic": "update_name_1",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 920,
+        "y": 2020,
+        "wires": [
+            [
+                "d54d9e451bba1ad3"
+            ]
+        ]
+    },
+    {
+        "id": "fc7e7301c14fe899",
+        "type": "ui_numeric",
+        "z": "7404dcbbdfa141d6",
+        "name": "2º",
+        "label": "Inic.",
+        "tooltip": "",
+        "group": "7930c8158455088c",
+        "order": 6,
+        "width": 3,
+        "height": 1,
+        "wrap": false,
+        "passthru": true,
+        "topic": "update_initiative_1",
+        "topicType": "msg",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "30",
+        "step": 1,
+        "className": "",
+        "x": 910,
+        "y": 2060,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "09859ebe8d4d271e",
+        "type": "ui_text_input",
+        "z": "7404dcbbdfa141d6",
+        "name": "3º nome",
+        "label": "",
+        "tooltip": "",
+        "group": "7930c8158455088c",
+        "order": 8,
+        "width": 8,
+        "height": 1,
+        "passthru": true,
+        "mode": "text",
+        "delay": 300,
+        "topic": "update_name_2",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 920,
+        "y": 2100,
+        "wires": [
+            [
+                "4a1a4af99ce8e833"
+            ]
+        ]
+    },
+    {
+        "id": "f2573c537fe82095",
+        "type": "ui_numeric",
+        "z": "7404dcbbdfa141d6",
+        "name": "3º",
+        "label": "Inic.",
+        "tooltip": "",
+        "group": "7930c8158455088c",
+        "order": 9,
+        "width": 3,
+        "height": 1,
+        "wrap": false,
+        "passthru": true,
+        "topic": "update_initiative_2",
+        "topicType": "msg",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "30",
+        "step": 1,
+        "className": "",
+        "x": 910,
+        "y": 2140,
+        "wires": [
+            [
+                "7a6a79b923cc963a"
+            ]
+        ]
+    },
+    {
+        "id": "3fe322326a8768cb",
+        "type": "ui_text_input",
+        "z": "7404dcbbdfa141d6",
+        "name": "4º nome",
+        "label": "",
+        "tooltip": "",
+        "group": "7930c8158455088c",
+        "order": 11,
+        "width": 8,
+        "height": 1,
+        "passthru": true,
+        "mode": "text",
+        "delay": 300,
+        "topic": "update_name_3",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 920,
+        "y": 2180,
+        "wires": [
+            [
+                "28995bb12e052689"
+            ]
+        ]
+    },
+    {
+        "id": "de6b9467201893cc",
+        "type": "ui_numeric",
+        "z": "7404dcbbdfa141d6",
+        "name": "4º",
+        "label": "Inic.",
+        "tooltip": "",
+        "group": "7930c8158455088c",
+        "order": 12,
+        "width": 3,
+        "height": 1,
+        "wrap": false,
+        "passthru": true,
+        "topic": "update_initiative_3",
+        "topicType": "msg",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "30",
+        "step": 1,
+        "className": "",
+        "x": 910,
+        "y": 2220,
+        "wires": [
+            [
+                "7a6a79b923cc963a"
+            ]
+        ]
+    },
+    {
+        "id": "df82c1f09cca3d4d",
+        "type": "ui_text_input",
+        "z": "7404dcbbdfa141d6",
+        "name": "5º nome",
+        "label": "",
+        "tooltip": "",
+        "group": "7930c8158455088c",
+        "order": 14,
+        "width": 8,
+        "height": 1,
+        "passthru": true,
+        "mode": "text",
+        "delay": 300,
+        "topic": "update_name_${i}",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 920,
+        "y": 2260,
+        "wires": [
+            [
+                "6bcfef7322153b83"
+            ]
+        ]
+    },
+    {
+        "id": "c481dea4c4b2bd0c",
+        "type": "ui_numeric",
+        "z": "7404dcbbdfa141d6",
+        "name": "5º",
+        "label": "Inic.",
+        "tooltip": "",
+        "group": "7930c8158455088c",
+        "order": 15,
+        "width": 3,
+        "height": 1,
+        "wrap": false,
+        "passthru": true,
+        "topic": "update_initiative_4",
+        "topicType": "msg",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "30",
+        "step": 1,
+        "className": "",
+        "x": 910,
+        "y": 2300,
+        "wires": [
+            [
+                "7a6a79b923cc963a"
+            ]
+        ]
+    },
+    {
+        "id": "324ddff4823aea6e",
+        "type": "ui_text_input",
+        "z": "7404dcbbdfa141d6",
+        "name": "6º nome",
+        "label": "",
+        "tooltip": "",
+        "group": "7930c8158455088c",
+        "order": 17,
+        "width": 8,
+        "height": 1,
+        "passthru": true,
+        "mode": "text",
+        "delay": 300,
+        "topic": "update_name_5",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 920,
+        "y": 2340,
+        "wires": [
+            [
+                "5e5480c115119617"
+            ]
+        ]
+    },
+    {
+        "id": "a540166935bd2cd2",
+        "type": "ui_numeric",
+        "z": "7404dcbbdfa141d6",
+        "name": "6º",
+        "label": "Inic.",
+        "tooltip": "",
+        "group": "7930c8158455088c",
+        "order": 18,
+        "width": 3,
+        "height": 1,
+        "wrap": false,
+        "passthru": true,
+        "topic": "update_initiative_5",
+        "topicType": "msg",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "30",
+        "step": 1,
+        "className": "",
+        "x": 910,
+        "y": 2380,
+        "wires": [
+            [
+                "7a6a79b923cc963a"
+            ]
+        ]
+    },
+    {
+        "id": "ebd8f06d1087d6e0",
+        "type": "ui_text",
+        "z": "7404dcbbdfa141d6",
+        "group": "7930c8158455088c",
+        "order": 1,
+        "width": 12,
+        "height": 1,
+        "name": "Contador de Rodadas",
+        "label": "Rodada: ",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 660,
+        "y": 2340,
+        "wires": []
+    },
+    {
+        "id": "dc60f0c84990fb11",
+        "type": "ui_button",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "group": "7930c8158455088c",
+        "order": 22,
+        "width": 4,
+        "height": 1,
+        "passthru": false,
+        "label": "Finalizar combate",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "false",
+        "payloadType": "bool",
+        "topic": "combat_active",
+        "topicType": "msg",
+        "x": 190,
+        "y": 2160,
+        "wires": [
+            [
+                "9155c2742ca39fa9"
+            ]
+        ]
+    },
+    {
+        "id": "3c07680a4231d1ca",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "function 13",
+        "func": "msg.payload = msg.payload;\nmsg.topic = \"update_name_0\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1120,
+        "y": 1940,
+        "wires": [
+            [
+                "7a6a79b923cc963a"
+            ]
+        ]
+    },
+    {
+        "id": "7a6a79b923cc963a",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "Armazenar Dados",
+        "func": "// msg.topic será \"update_name_0\", \"update_initiative_1\", etc.\n// msg.payload será o valor inserido.\n\n// Ex: Se msg.topic é \"update_name_0\", guarda msg.payload em flow.name_0\n// Ex: Se msg.topic é \"update_initiative_1\", guarda msg.payload em flow.initiative_1\n\n// Verifica se o tópico tem o formato esperado\nif (msg.topic.includes(\"update_\")) {\n    let key_parts = msg.topic.split(\"_\"); // [\"update\", \"name\" ou \"initiative\", \"index\"]\n    if (key_parts.length === 3) {\n        let data_type = key_parts[1]; // \"name\" ou \"initiative\"\n        let index = key_parts[2];     // \"0\", \"1\", ...\n\n        var flow_key = data_type + \"_\" + index; // \"name_0\", \"initiative_0\", etc.\n        flow.set(flow_key, msg.payload);\n        // node.warn(\"valor do flow key: \" + flow_key + \" valor do payload \" + msg.payload)\n    }\n}\n// return msg.payload; // Não precisa enviar mensagem adiante, apenas guarda no contexto.\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1450,
+        "y": 2120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d54d9e451bba1ad3",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "function 14",
+        "func": "msg.payload = msg.payload;\nmsg.topic = \"update_name_1\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1120,
+        "y": 2020,
+        "wires": [
+            [
+                "7a6a79b923cc963a"
+            ]
+        ]
+    },
+    {
+        "id": "4a1a4af99ce8e833",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "function 15",
+        "func": "msg.payload = msg.payload;\nmsg.topic = \"update_name_2\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1120,
+        "y": 2100,
+        "wires": [
+            [
+                "7a6a79b923cc963a"
+            ]
+        ]
+    },
+    {
+        "id": "28995bb12e052689",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "function 16",
+        "func": "msg.payload = msg.payload;\nmsg.topic = \"update_name_3\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 2180,
+        "wires": [
+            [
+                "7a6a79b923cc963a"
+            ]
+        ]
+    },
+    {
+        "id": "6bcfef7322153b83",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "function 17",
+        "func": "msg.payload = msg.payload;\nmsg.topic = \"update_name_4\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1130,
+        "y": 2260,
+        "wires": [
+            [
+                "7a6a79b923cc963a"
+            ]
+        ]
+    },
+    {
+        "id": "5e5480c115119617",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "function 18",
+        "func": "msg.payload = msg.payload;\nmsg.topic = \"update_name_5\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1090,
+        "y": 2340,
+        "wires": [
+            [
+                "7a6a79b923cc963a"
+            ]
+        ]
+    },
+    {
+        "id": "1f69021e885715b1",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "Processar Próximo Turno",
+        "func": "let combatActive = flow.get(\"combat_active\") || false;\n\nif (!combatActive) {\n    // Se o combate não estiver ativo, impede o avanço e notifica o usuário\n    let toastMsg = {\n        payload: \"O combate precisa ser iniciado primeiro!\",\n        topic: \"Atenção\"\n    };\n    let roundDisplayMsg = {\n        payload: flow.get(\"current_round_count\") || 0 // Mostra a rodada atual ou 0\n    };\n    return [toastMsg, roundDisplayMsg]; // Envia para as duas saídas e para de executar\n    \n}\n\n// Obter os valores atuais de turno e rodada do contexto de fluxo\n// turnCount inicia em 0 para a primeira rodada se for o primeiro turno dela\nlet turnCount = flow.get(\"current_turn_count\") || 0;\nlet roundCount = flow.get(\"current_round_count\") || 1; // Garante que a rodada comece em 1\n\n// 1º: Garantir que a contagem de players ativos aconteça corretamente\nlet activePlayers = 0;\nconst NUM_ROWS = 6; // Seu número fixo de linhas de combatentes\n\nfor (let i = 0; i < NUM_ROWS; i++) {\n    let playerName = flow.get(\"name_\" + i) || \"\"; // Pega o nome do player da linha 'i'\n    node.warn(\"valor do player name: \" + playerName)\n\n    if (playerName.trim() !== \"\") { // Verifica se o nome não está vazio ou contém apenas espaços\n        activePlayers++;\n    }\n    node.warn(\"valor de players ativos: \" + activePlayers)\n\n}\n\n// Lógica de avanço do turno e rodada:\n\n// PRIMEIRO: Incrementa o turno\nturnCount++;\n\n// 2º: Fazer que a contagem da rodada seja incrementada quando um número de turnos\n// igual ao número de players ativos acontecer.\n// Ou seja, se activePlayers = 3, quando turnCount chegar a 3, a rodada termina.\nif (activePlayers > 0 && turnCount >= activePlayers) {\n    // Se o número de turnos alcançou ou ultrapassou o número de players ativos,\n    // significa que todos tiveram sua vez nesta rodada.\n    roundCount++;   // Avança para a próxima rodada\n    turnCount = 0;  // Reinicia a contagem de turnos para a nova rodada\n}\n\n// Salva os novos valores de turno e rodada no contexto de fluxo para persistência\nflow.set(\"current_turn_count\", turnCount);\nflow.set(\"current_round_count\", roundCount);\n\n// Preparar as mensagens de saída:\n\n// Mensagem para o toast (notificação)\nlet toastMsg = {\n    payload: `Fim do ${turnCount === 0 ? activePlayers : turnCount}º turno (Rodada ${roundCount}).`,\n    topic: \"Andamento do Combate\"\n};\n\n// Pequena correção para o payload do toast:\n// Se turnCount for 0 (porque a rodada acabou de ser incrementada e resetamos o turno),\n// o turno atual \"finalizado\" é o número total de players ativos.\n// Caso contrário, é o valor atual de turnCount.\n\n// Mensagem para atualizar o display da rodada no dashboard\nlet roundDisplayMsg = {\n    payload: roundCount // Envia o valor atualizado da rodada\n};\n\n// Retorna as mensagens para as respectivas saídas\n// Saída 0 para o nó ui_toast (ou similar)\n// Saída 1 para o nó ui_text (ou similar) que mostra a rodada\nreturn [toastMsg, roundDisplayMsg];",
+        "outputs": 3,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 310,
+        "y": 2360,
+        "wires": [
+            [
+                "c1780801764a81e4"
+            ],
+            [
+                "ebd8f06d1087d6e0"
+            ],
+            [
+                "fd2e6bb9c28636cb"
+            ]
+        ]
+    },
+    {
+        "id": "3fc555b78b24fec1",
+        "type": "ui_button",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "group": "7930c8158455088c",
+        "order": 21,
+        "width": 4,
+        "height": 1,
+        "passthru": false,
+        "label": "Próximo Turno",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "next_turn",
+        "payloadType": "str",
+        "topic": "control_combat_action",
+        "topicType": "msg",
+        "x": 160,
+        "y": 2240,
+        "wires": [
+            [
+                "1f69021e885715b1"
+            ]
+        ]
+    },
+    {
+        "id": "c1780801764a81e4",
+        "type": "ui_toast",
+        "z": "7404dcbbdfa141d6",
+        "position": "top right",
+        "displayTime": "3",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "className": "",
+        "topic": "Atenção!",
+        "name": "Notificar jogadores",
+        "x": 450,
+        "y": 2260,
+        "wires": []
+    },
+    {
+        "id": "fd2e6bb9c28636cb",
+        "type": "debug",
+        "z": "7404dcbbdfa141d6",
+        "name": "debug 23",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 640,
+        "y": 2380,
+        "wires": []
+    },
+    {
+        "id": "b2835e91954b7109",
+        "type": "comment",
+        "z": "7404dcbbdfa141d6",
+        "name": "Iniciativa",
+        "info": "",
+        "x": 220,
+        "y": 1880,
+        "wires": []
+    },
+    {
+        "id": "1129ee55cb0c22d4",
+        "type": "inject",
+        "z": "7404dcbbdfa141d6",
+        "name": "Inicialização",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "monsters",
+        "payloadType": "str",
+        "x": 230,
+        "y": 2780,
+        "wires": [
+            [
+                "ccab954906ca06e2",
+                "bdb7f17156505e99",
+                "1e0a6b15a8df1c99"
+            ]
+        ]
+    },
+    {
+        "id": "ccab954906ca06e2",
+        "type": "http request",
+        "z": "7404dcbbdfa141d6",
+        "name": "req.esc. magias",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://www.dnd5eapi.co/api/2014/magic-schools",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 500,
+        "y": 2580,
+        "wires": [
+            [
+                "216fe94cd4cc0e4e"
+            ]
+        ]
+    },
+    {
+        "id": "bdb7f17156505e99",
+        "type": "http request",
+        "z": "7404dcbbdfa141d6",
+        "name": "req. regras",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://www.dnd5eapi.co/api/2014/rule-sections",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 490,
+        "y": 2840,
+        "wires": [
+            [
+                "360fb5d87fa428f1"
+            ]
+        ]
+    },
+    {
+        "id": "1e0a6b15a8df1c99",
+        "type": "http request",
+        "z": "7404dcbbdfa141d6",
+        "name": "req. monstros",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://www.dnd5eapi.co/api/2014/monsters",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 500,
+        "y": 3080,
+        "wires": [
+            [
+                "33c24a9f13f0fa75"
+            ]
+        ]
+    },
+    {
+        "id": "216fe94cd4cc0e4e",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "escolas de magia list",
+        "func": "\nif (msg.payload && msg.payload.results && Array.isArray(msg.payload.results)) {\n    const magicschools = msg.payload.results;\n\n    // O nó ui_dropdown espera que as opções estejam em msg.options.\n    // Cada opção pode ser uma string simples (que será usada como label e value)\n    // ou um objeto {label: \"Nome Visível\", value: \"valor_interno\"}.\n    // Vamos usar o nome do monstro como label e o URL completo para os detalhes como value.\n    //msg.options = magicschools.map(magicschool => {\n    //    return {\n    //        label: magicschool.name, // O que o utilizador vê no dropdown\n    //        value: \"https://www.dnd5eapi.co\" + magicschool.url // O URL para buscar detalhes quando selecionado\n    //    };\n    //});\n    // É uma boa prática limpar o msg.payload original se ele for grande e não for mais necessário\n    // para evitar passar dados desnecessários adiante, mas é opcional.\n    // delete msg.payload;\n    //return msg;\n\n\n    msg.options = magicschools.map(magicschool => {\n        return { \n            // \n             //[magicschool.name : Label, \"https://www.dnd5eapi.co\" + magicschool.url : Value]};\n            \n             // Label: magicschool.name, \n             //Value: \"https://www.dnd5eapi.co\" + magicschool.url };\n            [magicschool.name]: \"https://www.dnd5eapi.co\" + magicschool.url\n        };\n\n    });\n    return msg;\n\n} else {\n    node.error(\"Estrutura de dados dos monstros inesperada ou não encontrada.\", msg);\n    return null; // Interrompe o fluxo se os dados não estiverem corretos\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 540,
+        "y": 2640,
+        "wires": [
+            [
+                "7dc57f930c9e0a9d"
+            ]
+        ]
+    },
+    {
+        "id": "360fb5d87fa428f1",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "rules list",
+        "func": "\nif (msg.payload && msg.payload.results && Array.isArray(msg.payload.results)) {\n    const rules = msg.payload.results;\n\n    // O nó ui_dropdown espera que as opções estejam em msg.options.\n    // Cada opção pode ser uma string simples (que será usada como label e value)\n    // ou um objeto {label: \"Nome Visível\", value: \"valor_interno\"}.\n    // Vamos usar o nome do monstro como label e o URL completo para os detalhes como value.\n    //msg.options = magicschools.map(magicschool => {\n    //    return {\n    //        label: magicschool.name, // O que o utilizador vê no dropdown\n    //        value: \"https://www.dnd5eapi.co\" + magicschool.url // O URL para buscar detalhes quando selecionado\n    //    };\n    //});\n    // É uma boa prática limpar o msg.payload original se ele for grande e não for mais necessário\n    // para evitar passar dados desnecessários adiante, mas é opcional.\n    // delete msg.payload;\n    //return msg;\n\n\n    msg.options = rules.map(rule => {\n        return { \n            // \n             //[magicschool.name : Label, \"https://www.dnd5eapi.co\" + magicschool.url : Value]};\n             // Label: magicschool.name, \n             //Value: \"https://www.dnd5eapi.co\" + magicschool.url };\n             \n            [rule.name]: \"https://www.dnd5eapi.co\" + rule.url\n        };\n\n    });\n    return msg;\n\n} else {\n    node.error(\"Estrutura de dados dos monstros inesperada ou não encontrada.\", msg);\n    return null; // Interrompe o fluxo se os dados não estiverem corretos\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 2900,
+        "wires": [
+            [
+                "6943c97e5a237dc3"
+            ]
+        ]
+    },
+    {
+        "id": "33c24a9f13f0fa75",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "monsters list",
+        "func": "\nif (msg.payload && msg.payload.results && Array.isArray(msg.payload.results)) {\n    const monsters = msg.payload.results;\n\n    // O nó ui_dropdown espera que as opções estejam em msg.options.\n    // Cada opção pode ser uma string simples (que será usada como label e value)\n    // ou um objeto {label: \"Nome Visível\", value: \"valor_interno\"}.\n    // Vamos usar o nome do monstro como label e o URL completo para os detalhes como value.\n    //msg.options = magicschools.map(magicschool => {\n    //    return {\n    //        label: magicschool.name, // O que o utilizador vê no dropdown\n    //        value: \"https://www.dnd5eapi.co\" + magicschool.url // O URL para buscar detalhes quando selecionado\n    //    };\n    //});\n    // É uma boa prática limpar o msg.payload original se ele for grande e não for mais necessário\n    // para evitar passar dados desnecessários adiante, mas é opcional.\n    // delete msg.payload;\n    //return msg;\n\n\n    msg.options = monsters.map(monster => {\n        return { \n            // \n             //[magicschool.name : Label, \"https://www.dnd5eapi.co\" + magicschool.url : Value]};\n             // Label: magicschool.name, \n             //Value: \"https://www.dnd5eapi.co\" + magicschool.url };\n             \n            [monster.name]: \"https://www.dnd5eapi.co\" + monster.url\n        };\n\n    });\n    return msg;\n\n} else {\n    node.error(\"Estrutura de dados dos monstros inesperada ou não encontrada.\", msg);\n    return null; // Interrompe o fluxo se os dados não estiverem corretos\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 530,
+        "y": 3140,
+        "wires": [
+            [
+                "bc5c38c5b52450b8"
+            ]
+        ]
+    },
+    {
+        "id": "7dc57f930c9e0a9d",
+        "type": "ui_dropdown",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "label": "Escolas de Magia",
+        "tooltip": "",
+        "place": "Select option",
+        "group": "6a3cbfddbb97d542",
+        "order": 4,
+        "width": 12,
+        "height": 1,
+        "passthru": true,
+        "multiple": false,
+        "options": [],
+        "payload": "",
+        "topic": "topic",
+        "topicType": "msg",
+        "className": "",
+        "x": 590,
+        "y": 2700,
+        "wires": [
+            [
+                "40e51693c4d836d5"
+            ]
+        ]
+    },
+    {
+        "id": "6943c97e5a237dc3",
+        "type": "ui_dropdown",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "label": "Regras do Jogo",
+        "tooltip": "",
+        "place": "Select option",
+        "group": "6a3cbfddbb97d542",
+        "order": 6,
+        "width": 12,
+        "height": 1,
+        "passthru": true,
+        "multiple": false,
+        "options": [],
+        "payload": "",
+        "topic": "topic",
+        "topicType": "msg",
+        "className": "",
+        "x": 720,
+        "y": 3040,
+        "wires": [
+            [
+                "a9dad20171d73f74"
+            ]
+        ]
+    },
+    {
+        "id": "bc5c38c5b52450b8",
+        "type": "ui_dropdown",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "label": "Monstros e Criaturas",
+        "tooltip": "",
+        "place": "Select option",
+        "group": "6a3cbfddbb97d542",
+        "order": 5,
+        "width": 12,
+        "height": 1,
+        "passthru": true,
+        "multiple": false,
+        "options": [],
+        "payload": "",
+        "topic": "topic",
+        "topicType": "msg",
+        "className": "",
+        "x": 640,
+        "y": 3320,
+        "wires": [
+            [
+                "92806e756220bda3"
+            ]
+        ]
+    },
+    {
+        "id": "20516f09bf23e566",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "Limpar Dashboard",
+        "func": "// Função: Limpar Dashboard\n// Este nó é acionado por um botão e envia mensagens para limpar os widgets do dashboard.\n\n// Mensagem para limpar dropdowns e UI Templates\nconst clearMsg = { payload: \"\" }; // Payload vazio limpa dropdowns e remove conteúdo de ui_template/ui_text\n\n// O array de mensagens de saída deve ter o mesmo número de elementos que as saídas do nó (4 neste caso)\nconst outputs = [\n    null, // Saída 0: Escolas de Magia\n    null, // Saida 1: Regras do Jogo\n    null, // Saida 2: Monstros e Criaturas\n    null  // Saida 3: Caixa de Exibição de Detalhes\n];\n\n// Para limpar um dropdown, envie msg.payload = \"\" para a entrada do dropdown.\n// Para limpar um ui_template/ui_text, envie msg.payload = \"\" para a entrada do ui_template/ui_text.\n\n// Mensagem para limpar o dropdown de Escolas de Magia\noutputs[0] = { payload: \"\" };\n\n// Mensagem para limpar o dropdown de Regras do Jogo\noutputs[1] = { payload: \"\" };\n\n// Mensagem para limpar o dropdown de Monstros e Criaturas\noutputs[2] = { payload: \"\" };\n\n// Mensagem para limpar a caixa de exibição de detalhes\n// (O ui_template que exibe o Adult Black Dragon e suas propriedades)\noutputs[3] = { payload: \"\" }; // Ou { payload: \"<p></p>\" } para uma div vazia\n\nreturn outputs;",
+        "outputs": 4,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 210,
+        "y": 2960,
+        "wires": [
+            [
+                "7dc57f930c9e0a9d"
+            ],
+            [
+                "6943c97e5a237dc3"
+            ],
+            [
+                "bc5c38c5b52450b8"
+            ],
+            [
+                "13be50384296c671"
+            ]
+        ]
+    },
+    {
+        "id": "984c19da9dd0ca7f",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "Limpa dropdown Magia",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "null",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1130,
+        "y": 3060,
+        "wires": [
+            [
+                "7dc57f930c9e0a9d"
+            ]
+        ]
+    },
+    {
+        "id": "d17a689ed629a8c2",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "Limpa dropdown Magia",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "null",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1110,
+        "y": 3340,
+        "wires": [
+            [
+                "7dc57f930c9e0a9d"
+            ]
+        ]
+    },
+    {
+        "id": "40e51693c4d836d5",
+        "type": "switch",
+        "z": "7404dcbbdfa141d6",
+        "name": "Switch Escolas",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nnull"
+            },
+            {
+                "t": "null"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 780,
+        "y": 2700,
+        "wires": [
+            [
+                "60c9e3f7df0a6b6a",
+                "540a2accf3c4ca45",
+                "739450784302b63d",
+                "811a3aa68f6a0cf3"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "540a2accf3c4ca45",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "Limpa dropdown Regras",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "null",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1010,
+        "y": 2720,
+        "wires": [
+            [
+                "6943c97e5a237dc3"
+            ]
+        ]
+    },
+    {
+        "id": "dbce79e7fb552a05",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "Limpa dropdown Regras",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "null",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1110,
+        "y": 3380,
+        "wires": [
+            [
+                "6943c97e5a237dc3"
+            ]
+        ]
+    },
+    {
+        "id": "a9dad20171d73f74",
+        "type": "switch",
+        "z": "7404dcbbdfa141d6",
+        "name": "Switch Regras",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nnull"
+            },
+            {
+                "t": "null"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 900,
+        "y": 3040,
+        "wires": [
+            [
+                "932ce01d3f7fbbe2",
+                "984c19da9dd0ca7f",
+                "93454fd0b494d815",
+                "f7009497c38b81a0"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "739450784302b63d",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "Limpa dropdown Monstros",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "null",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1020,
+        "y": 2760,
+        "wires": [
+            [
+                "bc5c38c5b52450b8"
+            ]
+        ]
+    },
+    {
+        "id": "93454fd0b494d815",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "Limpa dropdown Monstros",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "null",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1140,
+        "y": 3100,
+        "wires": [
+            [
+                "bc5c38c5b52450b8"
+            ]
+        ]
+    },
+    {
+        "id": "92806e756220bda3",
+        "type": "switch",
+        "z": "7404dcbbdfa141d6",
+        "name": "Switch Monstros",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nnull"
+            },
+            {
+                "t": "null"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 860,
+        "y": 3320,
+        "wires": [
+            [
+                "fa015040b62057fd",
+                "d17a689ed629a8c2",
+                "dbce79e7fb552a05",
+                "a5f0a89b3b68a202"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "feb85762c63489d6",
+        "type": "ui_button",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "group": "6a3cbfddbb97d542",
+        "order": 2,
+        "width": 4,
+        "height": 1,
+        "passthru": false,
+        "label": "Limpar Seleção",
+        "tooltip": "Limpa as seleções de todos os dropdowns e a caixa de exibição.",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "\"clear\"",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 200,
+        "y": 3080,
+        "wires": [
+            [
+                "20516f09bf23e566"
+            ]
+        ]
+    },
+    {
+        "id": "13be50384296c671",
+        "type": "ui_template",
+        "z": "7404dcbbdfa141d6",
+        "group": "6a3cbfddbb97d542",
+        "name": "Exibir Seleção",
+        "order": 7,
+        "width": 12,
+        "height": 10,
+        "format": "<div ng-bind-html=\"msg.payload\"></div>",
+        "storeOutMessages": true,
+        "fwdInMessages": false,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "Angular expression / HTML",
+        "x": 1920,
+        "y": 2940,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "60c9e3f7df0a6b6a",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "Limpa ui_template",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "<p>Selecione uma opção de um dos menus...</p>",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 990,
+        "y": 2680,
+        "wires": [
+            [
+                "13be50384296c671"
+            ]
+        ]
+    },
+    {
+        "id": "811a3aa68f6a0cf3",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "Preparar URL Detalhada",
+        "rules": [
+            {
+                "t": "set",
+                "p": "url",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1010,
+        "y": 2640,
+        "wires": [
+            [
+                "bde3db5c84b51e0c"
+            ]
+        ]
+    },
+    {
+        "id": "932ce01d3f7fbbe2",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "Limpa ui_template",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "<p>Selecione uma opção de um dos menus...</p>",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1110,
+        "y": 3020,
+        "wires": [
+            [
+                "13be50384296c671"
+            ]
+        ]
+    },
+    {
+        "id": "f7009497c38b81a0",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "Preparar URL Detalhada",
+        "rules": [
+            {
+                "t": "set",
+                "p": "url",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1130,
+        "y": 2980,
+        "wires": [
+            [
+                "532340674a1f28d9"
+            ]
+        ]
+    },
+    {
+        "id": "fa015040b62057fd",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "Limpa ui_template",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "<p>Selecione uma opção de um dos menus...</p>",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1090,
+        "y": 3300,
+        "wires": [
+            [
+                "13be50384296c671"
+            ]
+        ]
+    },
+    {
+        "id": "a5f0a89b3b68a202",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "Preparar URL Detalhada",
+        "rules": [
+            {
+                "t": "set",
+                "p": "url",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1110,
+        "y": 3260,
+        "wires": [
+            [
+                "e4755e554c3951dd"
+            ]
+        ]
+    },
+    {
+        "id": "3821d2e35bbb8fe0",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "formatar p/ exibir magias",
+        "func": "// Função: Formatar Detalhes da Escola\nconst magicSchool = msg.payload;\n\n// Validação básica dos dados de entrada\nif (!magicSchool || typeof magicSchool !== 'object' || !magicSchool.name || !magicSchool.desc) {\n    node.error(\"Detalhes da escola de magia inválidos ou incompletos.\", msg);\n    // Considerar enviar uma mensagem de erro para o dashboard em vez de null\n    // msg.payload = \"<p>Erro: Não foi possível carregar os detalhes da escola de magia.</p>\";\n    // return msg;\n    return null; // Ou mantenha null se preferir não mostrar nada\n}\n\n// Apenas o HTML estrutural\nlet htmlOutput = `\n    <div class=\"magic-school-details\">\n        <h3>${magicSchool.name}</h3>\n        <p><strong>Descrição:</strong> ${magicSchool.desc}</p> \n\n    </div>\n`;\n// Nota: magicSchool.desc é frequentemente um array na API D&D 5e, por isso usei magicSchool.desc[0].\n// Se for uma string simples, use apenas magicSchool.desc. Verifique a estrutura da sua API.\n\nmsg.payload = htmlOutput;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1430,
+        "y": 2640,
+        "wires": [
+            [
+                "13be50384296c671"
+            ]
+        ]
+    },
+    {
+        "id": "5a7ef69431df4802",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "formatar p/ exibir regras",
+        "func": "// Função: Formatar Detalhes da Escola\nconst rule = msg.payload;\n\n// Validação básica dos dados de entrada\nif (!rule || typeof rule !== 'object' || !rule.name || !rule.desc) {\n    node.error(\"Detalhes da escola de magia inválidos ou incompletos.\", msg);\n    // Considerar enviar uma mensagem de erro para o dashboard em vez de null\n    // msg.payload = \"<p>Erro: Não foi possível carregar os detalhes da escola de magia.</p>\";\n    // return msg;\n    return null; // Ou mantenha null se preferir não mostrar nada\n}\n\n// Apenas o HTML estrutural\nlet htmlOutput = `\n    <div class=\"magic-school-details\">\n        <h3>${rule.name}</h3>\n        <p><strong>Descrição:</strong> ${rule.desc}</p> \n\n    </div>\n`;\n// Nota: magicSchool.desc é frequentemente um array na API D&D 5e, por isso usei magicSchool.desc[0].\n// Se for uma string simples, use apenas magicSchool.desc. Verifique a estrutura da sua API.\n\nmsg.payload = htmlOutput;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1570,
+        "y": 2980,
+        "wires": [
+            [
+                "13be50384296c671"
+            ]
+        ]
+    },
+    {
+        "id": "2804e21d5b577b60",
+        "type": "function",
+        "z": "7404dcbbdfa141d6",
+        "name": "formatar p/ exibir monstros",
+        "func": "// Função: Formatar Detalhes da Escola\nconst monster = msg.payload;\n\n// Validação básica dos dados de entrada\nif (!monster || typeof monster !== 'object' || !monster.name || !monster.type) {\n    node.error(\"Detalhes da criatura inválidos ou incompletos.\", msg);\n    // Considerar enviar uma mensagem de erro para o dashboard em vez de null\n    // msg.payload = \"<p>Erro: Não foi possível carregar os detalhes da escola de magia.</p>\";\n    // return msg;\n    // return null; // Ou mantenha null se preferir não mostrar nada\n}\n\n// Apenas o HTML estrutural\nlet htmlOutput = `\n    <div class=\"magic-school-details\">\n        <h3>» ${monster.name}</h3>\n        <p><strong>» Tipo:</strong> ${monster.type}</p>\n        <p><strong>» Descrição:</strong> ${(monster.desc === undefined) ? '-' : monster.desc}</p> \n\n        <p><strong>» Tamanho:</strong> ${monster.size}</p>\n        <p><strong>» Alinhamento:</strong> ${monster.alignment}</p>\n        <p><strong>» Classe de Armadura:</strong> ${monster.armor_class[0].value}, ${monster.armor_class[0].type}</p>\n        <p><strong>» Pontos de Vda:</strong> ${monster.hit_points}</p>\n       \n        <p><strong>» Valores de Atriburo:</strong>\n        <p><strong> - Força:</strong> ${monster.strength}</p>\n        <p><strong> - Destreza:</strong> ${monster.dexterity}</p>\n        <p><strong> - Constituição:</strong> ${monster.constitution}</p>\n        <p><strong> - Inteligência:</strong> ${monster.intelligence}</p>\n        <p><strong> - Sabedoria:</strong> ${monster.wisdom}</p>\n        <p><strong> - Carisma:</strong> ${monster.charisma}</p>\n        \n        <p><strong>» Deslocamento:</strong> ${monster.speed.walk}, ${(monster.speed.fly === undefined) ? '-' : monster.speed.fly}</p>\n        <p><strong>» Vulnerabilidade a Dano:</strong> ${(monster.damage_vulnerabilities === undefined) ? '-' : monster.damage_vulnerabilities}</p>\n        <p><strong>» Resistência a Dano:</strong> ${(monster.damage_resistences === undefined) ? '-' : monster.damage_resistences}</p>\n        <p><strong>» Imunidade a Dano:</strong> ${(monster.damage_immunities === undefined) ? '-' : monster.damage_immunities}</p>\n        <p><strong>» Sentidos:</strong> Blindsight: ${(monster.senses.blindsight === undefined) ? '-' : monster.senses.blindsight}, Darkvision: ${(monster.senses.darkvision === undefined) ? '-' : monster.senses.darkvision}, Percepção passiva: ${(monster.senses.passive_perception === undefined) ? '-' : monster.senses.passive_perception}</p>\n        <p><strong>» Idiomas:</strong> ${monster.languages}</p>\n        <p><strong>» Nível de Desafio:</strong> ${monster.challenge_rating}</p>\n        <p><strong>» Bônus de Proeficiência:</strong> ${monster.proficiency_bonus}</p>\n    </div>\n`;\n// Nota: magicSchool.desc é frequentemente um array na API D&D 5e, por isso usei magicSchool.desc[0].\n// Se for uma string simples, use apenas magicSchool.desc. Verifique a estrutura da sua API.\n\nmsg.payload = htmlOutput;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1680,
+        "y": 3320,
+        "wires": [
+            [
+                "13be50384296c671"
+            ]
+        ]
+    },
+    {
+        "id": "bde3db5c84b51e0c",
+        "type": "http request",
+        "z": "7404dcbbdfa141d6",
+        "name": "Buscar Detalhes",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1220,
+        "y": 2640,
+        "wires": [
+            [
+                "3821d2e35bbb8fe0"
+            ]
+        ]
+    },
+    {
+        "id": "532340674a1f28d9",
+        "type": "http request",
+        "z": "7404dcbbdfa141d6",
+        "name": "Buscar Detalhes",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1340,
+        "y": 2980,
+        "wires": [
+            [
+                "5a7ef69431df4802"
+            ]
+        ]
+    },
+    {
+        "id": "e4755e554c3951dd",
+        "type": "http request",
+        "z": "7404dcbbdfa141d6",
+        "name": "Buscar Detalhes",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1460,
+        "y": 3320,
+        "wires": [
+            [
+                "2804e21d5b577b60"
+            ]
+        ]
+    },
+    {
+        "id": "d921129d39dada97",
+        "type": "comment",
+        "z": "7404dcbbdfa141d6",
+        "name": "codex",
+        "info": "",
+        "x": 190,
+        "y": 2520,
+        "wires": []
+    },
+    {
+        "id": "2763e8e49e878305",
+        "type": "ui_text",
+        "z": "7404dcbbdfa141d6",
+        "group": "7930c8158455088c",
+        "order": 4,
+        "width": 1,
+        "height": 1,
+        "name": "",
+        "label": "1",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1110,
+        "y": 1900,
+        "wires": []
+    },
+    {
+        "id": "14601dde8165e459",
+        "type": "ui_text",
+        "z": "7404dcbbdfa141d6",
+        "group": "7930c8158455088c",
+        "order": 7,
+        "width": 1,
+        "height": 1,
+        "name": "",
+        "label": "2",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1110,
+        "y": 1980,
+        "wires": []
+    },
+    {
+        "id": "846dea68bc102fa5",
+        "type": "ui_text",
+        "z": "7404dcbbdfa141d6",
+        "group": "7930c8158455088c",
+        "order": 10,
+        "width": 1,
+        "height": 1,
+        "name": "",
+        "label": "3",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1110,
+        "y": 2060,
+        "wires": []
+    },
+    {
+        "id": "486cb1a75c8ad601",
+        "type": "ui_text",
+        "z": "7404dcbbdfa141d6",
+        "group": "7930c8158455088c",
+        "order": 13,
+        "width": 1,
+        "height": 1,
+        "name": "",
+        "label": "4",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1110,
+        "y": 2140,
+        "wires": []
+    },
+    {
+        "id": "1b6f76f94056c7be",
+        "type": "ui_text",
+        "z": "7404dcbbdfa141d6",
+        "group": "7930c8158455088c",
+        "order": 16,
+        "width": 1,
+        "height": 1,
+        "name": "",
+        "label": "5",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1110,
+        "y": 2220,
+        "wires": []
+    },
+    {
+        "id": "348b88378334952f",
+        "type": "ui_text",
+        "z": "7404dcbbdfa141d6",
+        "group": "7930c8158455088c",
+        "order": 19,
+        "width": 1,
+        "height": 1,
+        "name": "",
+        "label": "6",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1110,
+        "y": 2300,
+        "wires": []
+    },
+    {
+        "id": "edad19de2a630799",
+        "type": "change",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "contadorParaDecriptarNotes",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 460,
+        "y": 1620,
+        "wires": [
+            [
+                "5729a4615a39f5bb"
+            ]
+        ]
+    },
+    {
+        "id": "d750f46fa09f49ae",
+        "type": "ui_button",
+        "z": "7404dcbbdfa141d6",
+        "name": "",
+        "group": "44bddd3ed258efcf",
+        "order": 3,
+        "width": 10,
+        "height": 1,
+        "passthru": false,
+        "label": "Decrypt",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 200,
+        "y": 400,
+        "wires": [
+            [
+                "3b7155178fa83d24"
+            ]
+        ]
+    },
+    {
+        "id": "4472db609cac1862",
+        "type": "ui_spacer",
+        "z": "7404dcbbdfa141d6",
+        "name": "spacer",
+        "group": "861cd6ef73f811d9",
+        "order": 2,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "6142c57278adf6bf",
+        "type": "ui_spacer",
+        "z": "7404dcbbdfa141d6",
+        "name": "spacer",
+        "group": "861cd6ef73f811d9",
+        "order": 6,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "7bbad4de535644c5",
+        "type": "ui_spacer",
+        "z": "7404dcbbdfa141d6",
+        "name": "spacer",
+        "group": "6a3cbfddbb97d542",
+        "order": 1,
+        "width": 7,
+        "height": 1
+    },
+    {
+        "id": "bae070de5915be0d",
+        "type": "ui_spacer",
+        "z": "7404dcbbdfa141d6",
+        "name": "spacer",
+        "group": "6a3cbfddbb97d542",
+        "order": 3,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "3d31dca9f213fe21",
+        "type": "ui_group",
+        "name": "Ambientação",
+        "tab": "33ed3ee501b9e82f",
+        "order": 5,
+        "disp": true,
+        "width": 10,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "48af79046741b302",
+        "type": "mqtt-broker",
+        "name": "broker.emqx.io",
+        "broker": "broker.emqx.io",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "44bddd3ed258efcf",
+        "type": "ui_group",
+        "name": "Gravação da sessão",
+        "tab": "33ed3ee501b9e82f",
+        "order": 3,
+        "disp": true,
+        "width": 10,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "861cd6ef73f811d9",
+        "type": "ui_group",
+        "name": "Notes",
+        "tab": "33ed3ee501b9e82f",
+        "order": 1,
+        "disp": true,
+        "width": 12,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "7930c8158455088c",
+        "type": "ui_group",
+        "name": "Iniciativa",
+        "tab": "33ed3ee501b9e82f",
+        "order": 4,
+        "disp": true,
+        "width": 12,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "6a3cbfddbb97d542",
+        "type": "ui_group",
+        "name": "Codex",
+        "tab": "33ed3ee501b9e82f",
+        "order": 2,
+        "disp": true,
+        "width": 12,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "33ed3ee501b9e82f",
+        "type": "ui_tab",
+        "name": "Master",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]
