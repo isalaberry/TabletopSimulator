@@ -27,3 +27,12 @@ O projeto está organizado em duas pastas principais, cada uma contendo um códi
 -   **Arquivo:** `code.ino`
 
     Esta pasta armazena o código-fonte `code.ino` que foi desenvolvido para ser executado no microcontrolador **ESP32**. O código foi testado e utilizado no ambiente de simulação online **Wokwi**, que permite emular o hardware e seu comportamento de forma virtual.
+
+---
+
+## ✍️ Autoria
+
+-   **Alunos:** Caio Oliveira (a52963), Isabel Salaberry (a52983).
+-   **Disciplina:** Internet das Coisas
+-   **Turno:** C
+-   **Professor:** Gustavo Funchal
