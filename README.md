@@ -14,13 +14,13 @@ Assista a uma demonstração completa do projeto em funcionamento no YouTube. O 
 
 ## 📂 Estrutura do Repositório
 
-O projeto está organizado em duas pastas principais, cada uma contendo um código essencial para a replicação do nosso trabalho.
+O repositório está organizado em duas pastas principais, cada uma contendo um código essencial para a replicação do nosso trabalho.
 
 ### 1. `Node-red(JSON)`
 
 -   **Arquivo:** `flows.json`
 
-    Dentro desta pasta, você encontrará o arquivo `flows.json`. Este arquivo contém todo o fluxo (flow) que criamos no **Node-RED**. Para utilizá-lo, basta copiar o conteúdo do arquivo e importá-lo diretamente para o seu ambiente Node-RED através do menu de importação (`Ctrl+I`).
+    Dentro desta pasta, você encontrará o arquivo `flows.json`. Este arquivo contém todo o fluxo (flow) que criamos no **Node-RED**. Para utilizá-lo, basta copiar o conteúdo do arquivo e importá-lo diretamente para o seu ambiente Node-RED.
 
 ### 2. `Wokwi`
 
